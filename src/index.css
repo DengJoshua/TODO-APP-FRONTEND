@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.todo-section {
+  background: #f6f6f6;
+}
+
+.todo-form {
+  display: grid;
+  grid-template-rows: repeat(1fr, 3);
+  row-gap: 5px;
+}
+
+.title-text {
+  height: 40px;
+  outline: none;
+}
+
+.title-text:focus {
+  border: 1px solid #d4d9d7;
+  border-radius: 4px;
+}
+
+.description-text {
+  height: 100px;
+  padding: 5px;
+  outline: none;
+}
+
+.description-text:focus {
+  border: 1px solid #d4d9d7;
+  border-radius: 4px;
+}
+
+.todo-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 10px;
+}
+
+.todo {
+  background: #fff;
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+  height: auto;
+}
+
+.search-input {
+  width: 90%;
+  height: 40px;
+  border-radius: 5px 0px 0px 5px;
+  border: 2px solid #f2f2f2;
+  padding: 10px;
+}
+
+.search-button {
+  background: #fff;
+  height: 40px;
+  width: 10%;
+  margin: auto;
+  border: 2px solid #f2f2f2;
+  border-left: none;
+  border-radius: 0px 5px 5px 0px;
+}
+
+.todo_form {
+  width: 50%;
+  display: grid;
+  grid-template-columns: repeat(1fr);
+  justify-self: center;
+  align-self: center;
+  background: #fff;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.modalBackground {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  background-color: rgba(90, 90, 90, 0.7);
+}
+
+.modalContainer {
+  height: auto;
+  background-color: white;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.modalCloseButton {
+  cursor: pointer;
+  margin-left: 100%;
+}
+
+.modalCloseButton:hover {
+  color: rgb(247, 131, 131);
+}
