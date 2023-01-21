@@ -19,10 +19,13 @@ const Login = () => {
       .post(`${BASE_URL}/auth_token`, { email, password })
       .then(res => {
         const data = res.data;
-        data["status_code"] == 200
-          ? cookies.set("auth_token", data["auth_token"]) &&
-            (window.location = "/me/todos")
-          : setError(data.detail) && setPassword();
+        if (data["status_code"] == 200) {
+          cookies.set("auth_token", data["auth_token"]);
+          window.location = "/me/todos";
+        } else {
+          setError(data.detail);
+          setPassword("");
+        }
       })
       .catch(err => console.log(err));
   };

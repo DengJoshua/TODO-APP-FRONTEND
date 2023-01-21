@@ -10,7 +10,6 @@ import Todo from "./Todo";
 import AddTodo from "./AddTodo";
 import { paginate } from "../utils/paginate";
 import Pagination from "./common/Pagination";
-import Moment from "moment";
 
 const cookies = new Cookies();
 const categories = [
