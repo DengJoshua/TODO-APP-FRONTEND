@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-.todo-section {
+/* .todo-section {
   background: #f6f6f6;
-}
+} */
 
 .todo-form {
   display: grid;
@@ -37,14 +37,6 @@
   width: 100%;
   min-height: 100vh;
   padding: 10px;
-}
-
-.todo {
-  background: #fff;
-  padding: 15px;
-  border-radius: 15px;
-  margin-bottom: 20px;
-  height: auto;
 }
 
 .search-input {
@@ -81,20 +73,4 @@
   height: 100%;
   position: fixed;
   background-color: rgba(90, 90, 90, 0.7);
-}
-
-.modalContainer {
-  height: auto;
-  background-color: white;
-  border-radius: 20px;
-  padding: 20px;
-}
-
-.modalCloseButton {
-  cursor: pointer;
-  margin-left: 100%;
-}
-
-.modalCloseButton:hover {
-  color: rgb(247, 131, 131);
 }

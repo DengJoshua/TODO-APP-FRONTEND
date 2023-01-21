@@ -11,25 +11,24 @@ const cookies = new Cookies();
 const Login = () => {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [error, setError] = useState();
 
   const loginRequest = async e => {
     e.preventDefault();
-
     await axios
       .post(`${BASE_URL}/auth_token`, { email, password })
       .then(res => {
         const data = res.data;
-        cookies.set("auth_token", data["auth_token"]);
-        window.location = "/me/todos";
+        data["status_code"] == 200
+          ? cookies.set("auth_token", data["auth_token"]) &&
+            (window.location = "/me/todos")
+          : setError(data.detail) && setPassword();
       })
       .catch(err => console.log(err));
-
-    setEmail("");
-    setPassword("");
   };
 
   return (
-    <div className="h-screen w-full flex" style={{ background: "#f2f2f2" }}>
+    <div className="h-screen w-full flex bg-bgcolor">
       <div className="flex self-center justify-center px-5 sm:w-3/4 sm:mx-auto  md:p-0 lg:form w-full lg:w-1/2">
         <form className="flex flex-col self-center md:w-1/2 w-full lg:auth-form">
           <label className="text-sm sm:text-base">Enter Email:</label>
@@ -39,7 +38,7 @@ const Login = () => {
             onChange={e => setEmail(e.target.value)}
             value={email}
             name="title"
-            className="h-10 text-sm sm:text-base auth-input w-full focus:h-10"
+            className="h-10 text-sm my-3 sm:text-base auth-input w-full focus:h-10"
             required
           />
           <label className="text-sm sm:text-base">Enter Password:</label>
@@ -49,8 +48,10 @@ const Login = () => {
             onChange={e => setPassword(e.target.value)}
             value={password}
             name="title"
-            className="h-10 text-sm sm:text-base auth-input w-full focus:h-10"
+            className="h-10 text-sm my-3 sm:text-base auth-input w-full focus:h-10"
           />
+          {error && <span className="text-red-500 mb-2">{error}</span>}
+
           <div className="flex items-center 4 mb-2">
             <input
               id="remember"
@@ -64,7 +65,7 @@ const Login = () => {
           <button className="button" onClick={loginRequest}>
             Login
           </button>
-          <p className="my-3 text-sm sm:text-base">
+          <p className="my-3 text-sm my-5 sm:text-base">
             Don't have an account,{" "}
             <Link
               to="/signup"

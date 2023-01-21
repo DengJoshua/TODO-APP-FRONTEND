@@ -9,27 +9,37 @@ import { BASE_URL } from "../API";
 const cookies = new Cookies();
 
 const SignUp = () => {
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
+  const initialValues = { username: "", password: "", email: "" };
+  const [formValues, setFormValues] = useState(initialValues);
 
-  const navigate = useNavigate();
+  const [error, setError] = useState();
+
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
+  };
 
   const createAccount = async e => {
     e.preventDefault();
 
     await axios
-      .post(`${BASE_URL}/signup`, { email, password, username })
+      .post(`${BASE_URL}/signup`, {
+        email: formValues.email,
+        password: formValues.password,
+        username: formValues.username
+      })
       .then(res => {
         const data = res.data;
-        cookies.set("auth_token", data["auth_token"]);
+        if (data.status_code === 200) {
+          cookies.set("auth_token", data["auth_token"]);
+          window.location = "login";
+        } else {
+          setError(data.detail);
+        }
       })
-      .catch(err => console.log(err));
+      .catch(err => setError(err.data));
 
-    setEmail("");
-    setPassword("");
-    setUsername("");
-    navigate("/login");
+    setFormValues(initialValues);
   };
 
   return (
@@ -40,38 +50,43 @@ const SignUp = () => {
           <input
             type="text"
             placeholder="Enter your email...."
-            onChange={e => setEmail(e.target.value)}
-            value={email}
-            name="title"
-            className="h-10 text-sm sm:text-base auth-input w-full focus:h-10"
-            required
+            onChange={handleChange}
+            value={formValues.email}
+            name="email"
+            className={`h-10 text-sm my-2 sm:text-base auth-input w-full focus:h-10 ${
+              error ? "active outline outline-red-500" : "outline-none"
+            }`}
           />
+
           <label className="text-sm sm:text-base">Enter Username:</label>
           <input
             type="text"
             placeholder="Enter your username...."
-            onChange={e => setUsername(e.target.value)}
-            value={username}
-            name="title"
-            className="h-10 text-sm sm:text-base auth-input w-full focus:h-10"
+            onChange={handleChange}
+            value={formValues.username}
+            name="username"
+            className={`h-10 text-sm my-2 sm:text-base auth-input w-full focus:h-10 ${
+              error ? "active outline outline-red-500" : "outline-none"
+            }`}
           />
           <label className="text-sm sm:text-base">Enter Password:</label>
           <input
             type="password"
             placeholder="Enter your password...."
-            onChange={e => setPassword(e.target.value)}
-            value={password}
-            name="title"
-            className="h-10 text-sm sm:text-base auth-input w-full focus:h-10"
+            onChange={handleChange}
+            value={formValues.password}
+            name="password"
+            className={`h-10 text-sm my-2 sm:text-base auth-input w-full focus:h-10 ${
+              error ? "active outline outline-red-500" : "outline-none"
+            }`}
           />
-
-          <button className="button" onClick={createAccount}>
+          <button className="button mt-2" onClick={createAccount}>
             Sign up
           </button>
-          <p className="my-3 text-sm sm:text-base">
+          <p className="my-3 text-sm mt-3 sm:text-base">
             Already have an account,{" "}
             <Link
-              to="/signup"
+              to="/login"
               className="text-indigo-700 hover:text-indigo-500 hover:underline"
             >
               sign in?

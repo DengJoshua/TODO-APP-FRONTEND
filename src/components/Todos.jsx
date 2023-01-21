@@ -3,40 +3,32 @@ import Cookies from "universal-cookie";
 import axios from "axios";
 
 import { BASE_URL } from "../API";
-import {
-  MagnifyingGlassIcon,
-  EllipsisHorizontalIcon,
-  Squares2X2Icon
-} from "@heroicons/react/24/solid";
-import {
-  TagIcon,
-  CalendarIcon,
-  XCircleIcon,
-  ChatBubbleOvalLeftIcon
-} from "@heroicons/react/24/outline";
-import Category from "./Category";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+
+import Dropdown from "./Dropdown";
+import Todo from "./Todo";
+import AddTodo from "./AddTodo";
+import { paginate } from "../utils/paginate";
+import Pagination from "./common/Pagination";
+import Moment from "moment";
 
 const cookies = new Cookies();
 const categories = [
   {
-    name: "Category1",
-    id: 1,
-    href: "#"
+    name: "Social",
+    id: 1
   },
   {
-    name: "Category2",
-    id: 2,
-    href: "#"
+    name: "Work",
+    id: 2
   },
   {
-    name: "Category3",
-    id: 3,
-    href: "#"
+    name: "Entertainment",
+    id: 3
   },
   {
-    name: "Category4",
-    id: 4,
-    href: "#"
+    name: "Family",
+    id: 4
   }
 ];
 
@@ -45,8 +37,26 @@ const Todos = ({ user }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [search, setSearch] = useState("");
+  const [todoId, setTodoId] = useState(null);
+  const [selected, setSelected] = useState("Entertainment");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 4;
+
+  const todoData = paginate(todos, pageSize, currentPage);
+
   const [modalOpen, setOpenModal] = useState(false);
   const [isLoadingTodos, setIsLoadingTodos] = useState(true);
+
+  const closeModal = () => {
+    setTodoId(null);
+    setDescription("");
+    setTitle("");
+    setOpenModal(false);
+  };
+
+  const changePage = page => {
+    setCurrentPage(page);
+  };
 
   const fetchAllTodos = async () => {
     const cookie = cookies.get("auth_token");
@@ -68,7 +78,7 @@ const Todos = ({ user }) => {
     await axios
       .post(
         `${BASE_URL}/api/todos`,
-        { title, description },
+        { title, description, category: selected },
         {
           headers: {
             Authorization: `Bearer ${cookie}`
@@ -81,6 +91,40 @@ const Todos = ({ user }) => {
       .catch(err => console.log(err));
     setTitle("");
     setDescription("");
+    setSelected("Entertainment");
+    setOpenModal(false);
+  };
+
+  const editTodo = async todo => {
+    setDescription(todo.description);
+    setTitle(todo.title);
+    setTodoId(todo.id);
+    setSelected(todo.category);
+    setOpenModal(true);
+  };
+
+  const updateTodo = async e => {
+    e.preventDefault();
+    const cookie = cookies.get("auth_token");
+
+    await axios
+      .put(
+        `${BASE_URL}/api/todos/${todoId}`,
+        { title, description, category: selected },
+        {
+          headers: {
+            Authorization: `Bearer ${cookie}`
+          }
+        }
+      )
+      .then(res => {
+        setTodos(res.data);
+      })
+      .catch(err => console.log(err));
+    setTitle("");
+    setDescription("");
+    setSelected("Entertainment");
+    setTodoId(null);
     setOpenModal(false);
   };
 
@@ -101,6 +145,8 @@ const Todos = ({ user }) => {
     setIsLoadingTodos(false);
   }, []);
 
+  const count = todos.length;
+
   return (
     <React.Fragment>
       {" "}
@@ -111,59 +157,29 @@ const Todos = ({ user }) => {
         </div>
       ) : (
         <div>
-          <section className="todo-section w-full">
+          <section className="bg-bgcolor w-full h-screen">
             {modalOpen && (
-              <div className="modalBackground w-full bg-center">
-                <div className="modalContainer md:w-3/4 mx-auto my-10 mx-2 transition-all duration-200 ">
-                  <div className="flex justify-between mb-3">
-                    <h1 className="font-800">LOGO</h1>
-                    <XCircleIcon
-                      onClick={() => setOpenModal(false)}
-                      className="w-6 h-6 cursor-pointer justify-end"
-                    />
-                  </div>
-
-                  <form className="todo-form">
-                    <input
-                      type="text"
-                      required
-                      value={title}
-                      placeholder="Enter todo title..."
-                      onChange={e => setTitle(e.target.value)}
-                      className="title-text text-lg font-medium leading-6 text-gray-900"
-                    />
-                    <textarea
-                      name="text"
-                      value={description}
-                      onChange={e => setDescription(e.target.value)}
-                      rows="5"
-                      cols="10"
-                      wrap="soft"
-                      className="description-text"
-                      placeholder="Enter the description"
-                    >
-                      {" "}
-                    </textarea>
-                    <div className="flex justify-end">
-                      <TagIcon className="w-6 h-6 my-3 mx-3 cursor-pointer" />
-                      <CalendarIcon className="w-6 h-6 my-3 mx-3 cursor-pointer" />
-
-                      <button
-                        className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100"
-                        onClick={addTodo}
-                      >
-                        Create todo
-                      </button>
-                    </div>
-                  </form>
-                </div>
+              <div className="modalBackground w-full px-4 lg:p-0 bg-center">
+                <AddTodo
+                  addTodo={addTodo}
+                  title={title}
+                  description={description}
+                  setDescription={setDescription}
+                  setTitle={setTitle}
+                  closeModal={closeModal}
+                  updateTodo={updateTodo}
+                  selected={selected}
+                  setSelected={setSelected}
+                  categories={categories}
+                  id={todoId}
+                />
               </div>
             )}
-            <div className="md:w-3/5 h-screen mx-auto ">
-              <h1 className="text-3xl pt-8 pb-5 font-sans">
+            <div className="lg:w-4/5 xl:w-3/5 h-full mx-auto px-5 lg:px-0 ">
+              <h1 className="text-xl md:text-3xl pt-8 pb-5 font-sans">
                 Welcome back, {user.username}
               </h1>
-              <p className="text-base mb-10">
+              <p className="text-base font-light md:text-lg mb-10">
                 You currently have {todos.length} todos.
               </p>
 
@@ -188,43 +204,24 @@ const Todos = ({ user }) => {
                     <MagnifyingGlassIcon className="w-4 h-4 text-base cursor-pointer" />
                   </button>
                 </section>
-                <Category categories={categories} />
+                <Dropdown dropdowns={categories} />
 
                 <ul className="w-full">
-                  {todos.map(todo => (
-                    <li
-                      className="flex bg-white rounded-lg items-start mb-3 shadow-xl p-3"
+                  {todoData.map(todo => (
+                    <Todo
+                      todo={todo}
                       key={todo.id}
-                    >
-                      <input
-                        type="checkbox"
-                        className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-gray-200 checked:border-gray-200 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer"
-                      />
-                      <div className="flex items-center  w-full">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between">
-                            <span className="text-title">{todo.title}</span>
-                            <EllipsisHorizontalIcon className="md:w-8 md:h-8 flex right cursor-pointer" />
-                          </div>
-
-                          <p className="text-general">{todo.description}</p>
-                          <div className="flex justify-between mt-2">
-                            <span className="flex fit-content justify-center cursor-pointer rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100">
-                              <Squares2X2Icon className="w-5 h-5 mr-2" />
-                              Catergory
-                            </span>
-                            <div className="flex">
-                              5
-                              <CalendarIcon className="h-6 w-6 cursor-pointer ml-1 mr-3" />
-                              3
-                              <ChatBubbleOvalLeftIcon className="h-6 w-6 cursor-pointer ml-1 mr-2" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </li>
+                      deleteTodo={deleteTodo}
+                      editTodo={editTodo}
+                    />
                   ))}
                 </ul>
+                <Pagination
+                  todosCount={count}
+                  pageSize={pageSize}
+                  currentPage={currentPage}
+                  onPageChange={changePage}
+                />
               </div>
             </div>
           </section>

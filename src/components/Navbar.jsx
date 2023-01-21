@@ -1,31 +1,40 @@
 import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
+import Cookies from "universal-cookie";
 
 function Navbar({ user }) {
   const [openMenu, setOpenMenu] = useState(false);
 
+  const cookie = new Cookies();
+
+  const logout = async () => {
+    await cookie.remove("auth_token", { path: "/" });
+    setOpenMenu(false);
+    window.location = "/home";
+  };
+
   return (
-    <section className="sticky left-0 bg-white top-0 leading-[50px] mx-50 flex-row pl-5 md:sticky w-full">
-      <div className="md:flex items-center justify-between md:w-3/5 mx-auto">
-        <div className="md:flex cursor-pointer  md:justify-center md:items-center ">
+    <section className="sticky left-0 bg-white top-0 leading-[50px] mx-50 flex-row pl-5 lg:sticky w-full">
+      <div className="lg:flex items-center justify-between lg:w-4/5 xl:w-3/5 mx-auto">
+        <div className="lg:flex cursor-pointer  lg:justify-center lg:items-center ">
           <Link to="/home">LOGO</Link>
         </div>
         {!openMenu && (
           <Bars3Icon
             onClick={() => setOpenMenu(!openMenu)}
-            className="w-7 h-7 uppercase absolute right-8 top-3 cursor-pointer md:hidden"
+            className="w-7 h-7 uppercase absolute right-8 top-3 cursor-pointer lg:hidden"
           />
         )}
         {openMenu && (
           <XMarkIcon
             onClick={() => setOpenMenu(!openMenu)}
-            className="w-7 h-7 uppercase absolute right-8 top-3 cursor-pointer md:hidden"
+            className="w-7 h-7 uppercase absolute right-8 top-3 cursor-pointer lg:hidden"
           />
         )}
 
         <ul
-          className={` md:static md:justify-end absolute w-full bg-white md:opacity-100 left-0 top-0 md:z-auto z-[1] md:space-x-4 md:flex transition-all duration-500 pl-5   md:pl-0 ease-in ${
+          className={` lg:static lg:justify-end absolute w-full bg-white lg:opacity-100 left-0 top-0 lg:z-auto z-[1] lg:space-x-4 lg:flex transition-all duration-500 pl-5   lg:pl-0 ease-in ${
             openMenu ? "top-10 opacity-100" : "top-[-500px] opacity-0"
           }`}
         >
@@ -33,6 +42,7 @@ function Navbar({ user }) {
             <NavLink
               to="/home"
               className="hover:underline hover:underline-offset-1"
+              onClick={() => setOpenMenu(false)}
             >
               Home
             </NavLink>
@@ -40,8 +50,9 @@ function Navbar({ user }) {
 
           <li>
             <NavLink
-              to="/supprt"
+              to="/support"
               className="hover:underline hover:underline-offset-1"
+              onClick={() => setOpenMenu(false)}
             >
               Support
             </NavLink>
@@ -52,6 +63,7 @@ function Navbar({ user }) {
                 <NavLink
                   to="/login"
                   className="hover:underline hover:underline-offset-1"
+                  onClick={() => setOpenMenu(false)}
                 >
                   Login
                 </NavLink>
@@ -60,6 +72,7 @@ function Navbar({ user }) {
                 <NavLink
                   to="/signup"
                   className="hover:underline hover:underline-offset-1"
+                  onClick={() => setOpenMenu(false)}
                 >
                   Sign Up
                 </NavLink>
@@ -72,6 +85,7 @@ function Navbar({ user }) {
                 <NavLink
                   to="/settings"
                   className="hover:underline hover:underline-offset-1"
+                  onClick={() => setOpenMenu(false)}
                 >
                   Settings
                 </NavLink>
@@ -80,6 +94,7 @@ function Navbar({ user }) {
                 <NavLink
                   to="/me/todos"
                   className="hover:underline hover:underline-offset-1"
+                  onClick={() => setOpenMenu(false)}
                 >
                   My Todos
                 </NavLink>
@@ -88,13 +103,14 @@ function Navbar({ user }) {
                 <NavLink
                   to="/profile"
                   className="hover:underline hover:underline-offset-1"
+                  onClick={() => setOpenMenu(false)}
                 >
                   {user.username}
                 </NavLink>
               </li>
               <li>
                 <NavLink
-                  to="/logout"
+                  onClick={() => logout()}
                   className="hover:underline hover:underline-offset-1"
                 >
                   Logout

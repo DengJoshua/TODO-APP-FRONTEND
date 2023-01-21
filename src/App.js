@@ -6,11 +6,11 @@ import Todos from "./components/Todos";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/Home";
 import Navbar from "./components/Navbar";
-import Logout from "./components/logout";
 import { BASE_URL } from "./services/userService";
 import Cookies from "universal-cookie";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
+import Support from "./components/Support";
 
 const cookies = new Cookies();
 
@@ -47,21 +47,24 @@ const App = () => {
         </div>
       ) : (
         <React.Fragment>
-          <main className="w-full h-screen font-sans">
+          <main className="w-full h-full font-sans">
             <Navbar user={user} />
 
             <Routes>
               <Route path="/home" element={<Home />} />
+              <Route path="/support" element={<Support />} />
               <Route
                 path="/me/todos"
                 element={
                   auth_token ? <Todos user={user} /> : <Navigate to="/login" />
                 }
               />
-              <Route path="/login" element={<Login />} />
+              <Route
+                path="/login"
+                element={auth_token ? <Navigate to="/me/todos" /> : <Login />}
+              />
               <Route path="/signup" element={<SignUp />} />
-              <Route path="/logout" element={<Logout />} />
-              {/* <Route path="" element={<Navigate to="/me/todos" />} /> */}
+              <Route path="/not-found" element={<h1>Page not found</h1>} />
             </Routes>
           </main>
         </React.Fragment>

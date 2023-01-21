@@ -6,7 +6,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Category({ categories }) {
+export default function Dropdown({ dropdowns }) {
   return (
     <div className="w-full my-5">
       <Menu as="div" className=" inline-block text-left">
@@ -31,17 +31,17 @@ export default function Category({ categories }) {
         >
           <Menu.Items className="absolute  z-10 mt-2 w-56 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="py-1">
-              {categories.map(category => (
-                <Menu.Item key={category.id}>
+              {dropdowns.map(item => (
+                <Menu.Item key={item.id}>
                   {({ active }) => (
                     <a
-                      href={category.href}
+                      href={item.href}
                       className={classNames(
                         active ? "bg-gray-100 text-gray-900" : "text-gray-700",
                         "block px-4 py-2 text-sm"
                       )}
                     >
-                      {category.name}
+                      {item.name}
                     </a>
                   )}
                 </Menu.Item>

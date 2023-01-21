@@ -26,7 +26,7 @@
 .auth-input {
   padding: 8px;
   border: solid 1px #fefffe;
-  outline: none;
+  /* outline: none; */
   border-radius: 10px;
   margin-bottom: 10px;
 }
