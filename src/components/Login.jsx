@@ -41,7 +41,7 @@ const Login = () => {
             onChange={e => setEmail(e.target.value)}
             value={email}
             name="title"
-            className="h-10 text-sm my-3 sm:text-base auth-input w-full focus:h-10"
+            className="h-10 text-sm my-3 sm:text-base auth-input w-full outline-none focus:h-10"
             required
           />
           <label className="text-sm sm:text-base">Enter Password:</label>
@@ -51,7 +51,7 @@ const Login = () => {
             onChange={e => setPassword(e.target.value)}
             value={password}
             name="title"
-            className="h-10 text-sm my-3 sm:text-base auth-input w-full focus:h-10"
+            className="h-10 text-sm my-3 sm:text-base outline-none auth-input w-full focus:h-10"
           />
           {error && <span className="text-red-500 mb-2">{error}</span>}
 
@@ -62,7 +62,9 @@ const Login = () => {
               type="checkbox"
               name="status"
             />
-            <label className="text-sm sm:text-base">Always remember me.</label>
+            <label className="text-sm sm:text-base my-1">
+              Always remember me.
+            </label>
           </div>
 
           <button className="button" onClick={loginRequest}>

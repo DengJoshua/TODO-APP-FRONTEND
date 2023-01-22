@@ -1,16 +1,27 @@
 import React from "react";
 import _ from "lodash";
 
-const Pagination = ({ todosCount, pageSize, currentPage, onPageChange }) => {
+const Pagination = ({
+  todosCount,
+  pageSize,
+  currentPage,
+  onPageChange,
+  nextPage,
+  prevPage
+}) => {
   const pagesCount = Math.ceil(todosCount / pageSize);
 
   const pages = _.range(1, pagesCount + 1);
+  const lastPage = pages[pages.length - 1];
+
   return (
-    <div className="flex justify-center space-x-1 mt-10 dark:text-gray-100">
+    <div className="flex justify-center bottom-full space-x-1 mt-10 dark:text-gray-100">
       <button
         title="previous"
         type="button"
-        className="inline-flex items-center justify-center w-8 h-8 py-0 border rounded-md shadow-md dark:bg-gray-900 dark:border-gray-800"
+        disabled={currentPage === 1 ? "disabled" : ""}
+        onClick={prevPage}
+        className={`inline-flex items-center disabled:text-gray-500 justify-center w-8 h-8 py-0 border rounded-md shadow-md dark:bg-gray-900 dark:border-gray-800`}
       >
         <svg
           viewBox="0 0 24 24"
@@ -39,7 +50,11 @@ const Pagination = ({ todosCount, pageSize, currentPage, onPageChange }) => {
         </button>
       ))}
 
-      <button className="inline-flex items-center justify-center w-8 h-8 py-0 border rounded-md shadow-md dark:bg-gray-900 dark:border-gray-800">
+      <button
+        onClick={nextPage}
+        disabled={currentPage === lastPage ? "disabled" : ""}
+        className={`inline-flex items-center disabled:text-gray-500 justify-center w-8 h-8 py-0 border rounded-md shadow-md dark:bg-gray-900 dark:border-gray-800`}
+      >
         <svg
           viewBox="0 0 24 24"
           stroke="currentColor"

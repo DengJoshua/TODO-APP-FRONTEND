@@ -84,7 +84,7 @@ function Todo({ todo, deleteTodo, editTodo }) {
             <Squares2X2Icon className="w-4 h-4 mr-2 text-general" />
             {todo.category}
           </span>
-          <div className="flex">
+          <div className="flex text-general">
             5
             <CalendarIcon className="h-6 w-6 text-general cursor-pointer ml-1 mr-3" />
             3

@@ -4,6 +4,25 @@ import { TagIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 
+const categories = [
+  {
+    name: "Social",
+    id: 1
+  },
+  {
+    name: "Work",
+    id: 2
+  },
+  {
+    name: "Entertainment",
+    id: 3
+  },
+  {
+    name: "Family",
+    id: 4
+  }
+];
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -17,7 +36,6 @@ const AddTodo = ({
   closeModal,
   updateTodo,
   id,
-  categories,
   selected,
   setSelected
 }) => {
@@ -63,7 +81,7 @@ const AddTodo = ({
                     Category:
                   </Listbox.Label>
                   <div className="relative mt-1">
-                    <Listbox.Button className="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm">
+                    <Listbox.Button className="relative w-40 cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none sm:text-sm">
                       <span className="ml-3 block truncate">{selected}</span>
                       <span className="pointer-events-none absolute inset-y-0 right-0 ml-3 flex items-center pr-2">
                         <ChevronUpDownIcon

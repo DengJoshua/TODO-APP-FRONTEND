@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* .todo-section {
+body {
   background: #f6f6f6;
-} */
+}
 
 .todo-form {
   display: grid;
