@@ -5,26 +5,76 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import Cookies from "universal-cookie";
 import { BASE_URL } from "../API";
+import Joi from "joi-browser";
 
 const cookies = new Cookies();
 
 const Login = () => {
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState();
+  const [user, setUser] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({});
 
-  const loginRequest = async e => {
+  const schema = {
+    email: Joi.string()
+      .required()
+      .email()
+      .label("Email"),
+    password: Joi.string()
+      .required()
+      .min(5)
+      .label("Password")
+  };
+
+  const validate = e => {
     e.preventDefault();
+    const { error } = Joi.validate(
+      { email: user.email, password: user.password },
+      schema,
+      {
+        abortEarly: false
+      }
+    );
+
+    if (!error) return loginRequest();
+
+    const errors = {};
+    for (let item of error.details) errors[item.path[0]] = item.message;
+    return setErrors(errors);
+  };
+
+  const validateProperty = ({ name, value }) => {
+    const obj = { [name]: value };
+    const objSchema = { [name]: schema[name] };
+    const { error } = Joi.validate(obj, objSchema);
+    return error ? error.details[0].message : null;
+  };
+
+  const handleChange = ({ currentTarget: input }) => {
+    const errorsObj = { ...errors };
+    const errorMessage = validateProperty(input);
+    if (errorMessage) errorsObj[input.name] = errorMessage;
+    else delete errorsObj[input.name];
+
+    const userDetails = { ...user };
+    userDetails[input.name] = input.value;
+    setErrors(errorsObj);
+    setUser(userDetails);
+  };
+
+  const loginRequest = async () => {
     await axios
-      .post(`${BASE_URL}/auth_token`, { email, password })
+      .post(`${BASE_URL}/auth_token`, {
+        email: user.email,
+        password: user.password
+      })
       .then(res => {
         const data = res.data;
         if (data["status_code"] == 200) {
           cookies.set("auth_token", data["auth_token"]);
           window.location = "/me/todos";
         } else {
-          setError(data.detail);
-          setPassword("");
+          setErrors({ password: data.detail });
+          setUser({ email: user.email, password: "" });
         }
       })
       .catch(err => console.log(err));
@@ -38,22 +88,29 @@ const Login = () => {
           <input
             type="text"
             placeholder="Enter your email...."
-            onChange={e => setEmail(e.target.value)}
-            value={email}
-            name="title"
+            onChange={e => handleChange(e)}
+            value={user.email}
+            name="email"
             className="h-10 text-sm my-3 sm:text-base auth-input w-full outline-none focus:h-10"
             required
           />
+          {errors.email && (
+            <span className="text-red-500 mb-2">{errors.email}</span>
+          )}
+
           <label className="text-sm sm:text-base">Enter Password:</label>
           <input
             type="password"
             placeholder="Enter your password...."
-            onChange={e => setPassword(e.target.value)}
-            value={password}
-            name="title"
+            onChange={e => handleChange(e)}
+            value={user.password}
+            name="password"
             className="h-10 text-sm my-3 sm:text-base outline-none auth-input w-full focus:h-10"
           />
-          {error && <span className="text-red-500 mb-2">{error}</span>}
+
+          {errors.password && (
+            <span className="text-red-500 mb-2">{errors.password}</span>
+          )}
 
           <div className="flex items-center 4 mb-2">
             <input
@@ -67,7 +124,7 @@ const Login = () => {
             </label>
           </div>
 
-          <button className="button" onClick={loginRequest}>
+          <button className="button" onClick={validate}>
             Login
           </button>
           <p className="my-3 text-sm my-5 sm:text-base">

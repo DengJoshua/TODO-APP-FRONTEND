@@ -3,13 +3,18 @@ import Cookies from "universal-cookie";
 import axios from "axios";
 
 import { BASE_URL } from "../API";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 
-import Dropdown from "./Dropdown";
-import Todo from "./Todo";
-import AddTodo from "./AddTodo";
 import { paginate } from "../utils/paginate";
-import Pagination from "./common/Pagination";
+
+import InboxIcon from "@mui/icons-material/MoveToInbox";
+import CalendarToday from "@mui/icons-material/CalendarToday";
+import CalendarViewDay from "@mui/icons-material/CalendarTodayOutlined";
+import { ListItemAvatar } from "@mui/material";
+import Sidebar from "./common/Sidebar";
+import Today from "./Today";
+import { Routes, Route } from "react-router";
+import Upcoming from "./Upcoming";
+import Inbox from "./Inbox";
 
 const cookies = new Cookies();
 const categories = [
@@ -40,13 +45,53 @@ const Todos = ({ user }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [query, setQuery] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [todoId, setTodoId] = useState(null);
   const [selected, setSelected] = useState("Entertainment");
   const [category, setCategory] = useState(categories[0].name);
   const [currentPage, setCurrentPage] = useState(1);
   const [modalOpen, setOpenModal] = useState(false);
   const [isLoadingTodos, setIsLoadingTodos] = useState(true);
+  const [errors, setErrors] = useState(null);
   const pageSize = 4;
+
+  const startDate = new Date().toISOString().slice(0, 10);
+
+  const menuItems1 = [
+    {
+      text: "Today",
+      icon: <CalendarToday />,
+      path: "today"
+    },
+    {
+      text: "Next 7 Days",
+      icon: <CalendarViewDay />,
+      path: "upcoming"
+    },
+    {
+      text: "Inbox",
+      icon: <InboxIcon />,
+      path: "inbox"
+    }
+  ];
+
+  const menuItems2 = [
+    {
+      text: "Completed",
+      icon: <ListItemAvatar />,
+      path: "completed"
+    },
+    {
+      text: "Won't Do",
+      icon: <CalendarViewDay />,
+      path: "upcoming"
+    },
+    {
+      text: "Trash",
+      icon: <CalendarToday />,
+      path: "upcoming"
+    }
+  ];
 
   let filteredTodos = todos.filter(todo => {
     if (category === "Work") {
@@ -70,7 +115,11 @@ const Todos = ({ user }) => {
     );
   };
 
-  const todoData = paginate(search(filteredTodos), pageSize, currentPage);
+  const todoData = paginate(
+    search(query ? todos : filteredTodos),
+    pageSize,
+    currentPage
+  );
 
   const closeModal = () => {
     setTodoId(null);
@@ -103,7 +152,13 @@ const Todos = ({ user }) => {
     await axios
       .post(
         `${BASE_URL}/api/todos`,
-        { title, description, category: selected },
+        {
+          title,
+          description,
+          category: selected,
+          end_date: endDate,
+          start_date: startDate
+        },
         {
           headers: {
             Authorization: `Bearer ${cookie}`
@@ -111,13 +166,19 @@ const Todos = ({ user }) => {
         }
       )
       .then(res => {
-        setTodos(res.data);
+        if (res.status === 201) {
+          setTodos(res.data);
+          setOpenModal(false);
+          setCategory("All");
+          setTitle("");
+          setDescription("");
+          setSelected("Entertainment");
+          console.log(res.status);
+        } else {
+          setErrors(res.data);
+        }
       })
       .catch(err => console.log(err));
-    setTitle("");
-    setDescription("");
-    setSelected("Entertainment");
-    setOpenModal(false);
   };
 
   const editTodo = async todo => {
@@ -135,7 +196,13 @@ const Todos = ({ user }) => {
     await axios
       .put(
         `${BASE_URL}/api/todos/${todoId}`,
-        { title, description, category: selected },
+        {
+          title,
+          description,
+          category: selected,
+          start_date: startDate,
+          end_date: endDate
+        },
         {
           headers: {
             Authorization: `Bearer ${cookie}`
@@ -144,13 +211,14 @@ const Todos = ({ user }) => {
       )
       .then(res => {
         setTodos(res.data);
+        setTitle("");
+        setEndDate("");
+        setDescription("");
+        setSelected("Entertainment");
+        setTodoId(null);
+        setOpenModal(false);
       })
       .catch(err => console.log(err));
-    setTitle("");
-    setDescription("");
-    setSelected("Entertainment");
-    setTodoId(null);
-    setOpenModal(false);
   };
 
   const deleteTodo = async id => {
@@ -167,10 +235,13 @@ const Todos = ({ user }) => {
 
   useEffect(() => {
     fetchAllTodos();
+    if (todos.length <= 1) {
+      setCurrentPage(1);
+    }
     setIsLoadingTodos(false);
   }, []);
 
-  const count = todos.length;
+  const count = search(filteredTodos).length;
 
   return (
     <React.Fragment>
@@ -181,78 +252,90 @@ const Todos = ({ user }) => {
           <span className="ml-2">Loading Todos....</span>
         </div>
       ) : (
-        <section className="bg-bgcolor w-full h-max bg-cover bg-center">
-          {modalOpen && (
-            <div className="modalBackground w-full px-4 lg:p-0 bg-center">
-              <AddTodo
-                addTodo={addTodo}
-                title={title}
-                description={description}
-                setDescription={setDescription}
-                setTitle={setTitle}
-                closeModal={closeModal}
-                updateTodo={updateTodo}
-                selected={selected}
-                setSelected={setSelected}
-                categories={categories}
-                id={todoId}
-              />
-            </div>
-          )}
-          <div className="lg:w-4/5 xl:w-3/5 h-full mx-auto px-5 lg:px-0 ">
-            <h1 className="text-xl md:text-3xl pt-8 pb-5 font-sans">
-              Welcome back, {user.username}
-            </h1>
-            <p className="text-base font-light md:text-lg mb-10">
-              You currently have {todos.length} todos.
-            </p>
-
-            <div className="form-check my-2 mb-10">
-              <input
-                type="checkbox"
-                className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-grey-600 checked:border-grey-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer"
-                onClick={() => setOpenModal(true)}
-                defaultChecked
-              />{" "}
-              Add a new todo....
-            </div>
-            <div>
-              <section className="flex my-4">
-                <input
-                  type="text"
-                  required
-                  className="search-input md:text-light focus:outline-none focus:border-gray-400 focus:rounded-md"
-                  onChange={e => setQuery(e.target.value)}
-                />
-                <button className="flex justify-center items-center search-button">
-                  <MagnifyingGlassIcon className="w-4 h-4 text-base cursor-pointer" />
-                </button>
-              </section>
-              <Dropdown
-                categories={categories}
-                category={category}
-                setCategory={setCategory}
-              />
-
-              <ul className="w-full">
-                {todoData.map(todo => (
-                  <Todo
-                    todo={todo}
-                    key={todo.id}
+        <section className="bg-bgcolor w-full h-full">
+          <div className="md:flex">
+            <Sidebar menuItems1={menuItems1} menuItems2={menuItems2} />
+            <Routes>
+              <Route
+                path="/today"
+                element={
+                  <Today
                     deleteTodo={deleteTodo}
+                    description={description}
+                    selected={selected}
+                    setCategory={setCategory}
+                    categories={categories}
+                    category={category}
+                    setCurrentPage={setCurrentPage}
+                    setDescription={setDescription}
+                    addTodo={addTodo}
+                    title={title}
+                    description={description}
+                    setDescription={setDescription}
+                    setTitle={setTitle}
+                    closeModal={closeModal}
+                    updateTodo={updateTodo}
+                    selected={selected}
+                    setSelected={setSelected}
+                    categories={categories}
+                    errors={errors}
+                    todoId={todoId}
+                    endDate={endDate}
+                    setEndDate={setEndDate}
+                    todoData={todoData}
+                    user={user}
                     editTodo={editTodo}
+                    setQuery={setQuery}
+                    setOpenModal={setOpenModal}
+                    changePage={changePage}
+                    currentPage={currentPage}
+                    count={count}
+                    modalOpen={modalOpen}
+                    todos={todos}
                   />
-                ))}
-              </ul>
-              <Pagination
-                todosCount={count}
-                pageSize={pageSize}
-                currentPage={currentPage}
-                onPageChange={changePage}
-                prevPage={() => setCurrentPage(currentPage - 1)}
-                nextPage={() => setCurrentPage(currentPage + 1)}
+                }
               />
-            </div>
+              <Route path="upcoming" element={<Upcoming />} />
+              <Route
+                path="inbox"
+                element={
+                  <Inbox
+                    deleteTodo={deleteTodo}
+                    description={description}
+                    selected={selected}
+                    setCategory={setCategory}
+                    categories={categories}
+                    category={category}
+                    setCurrentPage={setCurrentPage}
+                    setDescription={setDescription}
+                    addTodo={addTodo}
+                    title={title}
+                    description={description}
+                    setDescription={setDescription}
+                    setTitle={setTitle}
+                    closeModal={closeModal}
+                    updateTodo={updateTodo}
+                    selected={selected}
+                    setSelected={setSelected}
+                    categories={categories}
+                    errors={errors}
+                    todoId={todoId}
+                    endDate={endDate}
+                    setEndDate={setEndDate}
+                    todoData={todoData}
+                    user={user}
+                    editTodo={editTodo}
+                    setQuery={setQuery}
+                    setOpenModal={setOpenModal}
+                    changePage={changePage}
+                    currentPage={currentPage}
+                    count={count}
+                    modalOpen={modalOpen}
+                    todos={todos}
+                  />
+                }
+              />
+            </Routes>
           </div>
         </section>
       )}

@@ -14,9 +14,20 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-function Todo({ todo, deleteTodo, editTodo }) {
+function Todo({ todo, deleteTodo, editTodo, selectTodo }) {
+  const getDaysLeft = () => {
+    const startDate = new Date(todo.start_date);
+    const endDate = new Date(todo.end_date);
+    const timeDifference = endDate.getTime() - startDate.getTime();
+    const dayDifference = Math.abs(timeDifference / (1000 * 3600 * 24));
+    return dayDifference;
+  };
+
   return (
-    <li className="flex bg-white rounded-lg items-start mb-4 shadow-xl p-3">
+    <li
+      className="flex bg-white rounded-lg items-start mb-4 shadow-xl p-3"
+      onClick={() => selectTodo(todo)}
+    >
       <input
         type="checkbox"
         className="accent-gray-500 mt-1 border-none mx-2"
@@ -80,12 +91,11 @@ function Todo({ todo, deleteTodo, editTodo }) {
 
         <p className="text-general mb-1">{todo.description}</p>
         <div className="flex justify-between mt-2">
-          <span className="flex fit-content text-generla justify-center items-center cursor-pointer rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100">
-            <Squares2X2Icon className="w-4 h-4 mr-2 text-general" />
+          <span className="fit-content text-general p-0.5 left cursor-pointer rounded-md border border-gray-300 text-sm hover:bg-gray-50 ">
             {todo.category}
           </span>
           <div className="flex text-general">
-            5
+            {getDaysLeft()}
             <CalendarIcon className="h-6 w-6 text-general cursor-pointer ml-1 mr-3" />
             3
             <ChatBubbleOvalLeftIcon className="h-6 w-6 text-general cursor-pointer ml-1 mr-2" />

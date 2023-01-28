@@ -8,10 +8,10 @@ function classNames(...classes) {
 
 export default function Dropdown({ categories, category, setCategory }) {
   return (
-    <Listbox value={category} onChange={setCategory}>
+    <Listbox value={category}>
       {({ open }) => (
         <>
-          <div className=" my-4">
+          <div className=" my-4 sm:hidden">
             <Listbox.Button className="w-40 cursor-default flex justify-between pr-2 rounded-md border border-gray-300 bg-white py-2 pl-3 text-left shadow-sm focus:outline-none sm:text-sm">
               {category}
               <ChevronUpDownIcon className="h-5 w-5 text-gray-400" />
@@ -28,6 +28,7 @@ export default function Dropdown({ categories, category, setCategory }) {
                 {categories.map(item => (
                   <Listbox.Option
                     key={item.id}
+                    onClick={() => setCategory(item.name)}
                     className={({ active }) =>
                       classNames(
                         active ? "text-white bg-indigo-600" : "text-gray-900",

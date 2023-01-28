@@ -54,7 +54,7 @@ const App = () => {
               <Route path="/home" element={<Home />} />
               <Route path="/support" element={<Support />} />
               <Route
-                path="/me/todos"
+                path="/me/todos//*"
                 element={
                   auth_token ? <Todos user={user} /> : <Navigate to="/login" />
                 }

@@ -37,7 +37,9 @@ const AddTodo = ({
   updateTodo,
   id,
   selected,
-  setSelected
+  setSelected,
+  endDate,
+  setEndDate
 }) => {
   return (
     <div className="w-full flex items-start gap-5 lg:w-3/5 mx-auto mt-56 bg-white rounded-xl p-5 transition-all duration-200 ">
@@ -73,12 +75,17 @@ const AddTodo = ({
             {" "}
           </textarea>
           <div className="flex justify-end gap-5 items-center">
-            <TagIcon className="w-6 h-6  mx-3 cursor-pointer" />
+            <label>Finish by:</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={e => setEndDate(e.target.value)}
+            />
             <Listbox value={selected} onChange={setSelected}>
               {({ open }) => (
                 <>
                   <Listbox.Label className="block text-sm font-medium text-gray-700">
-                    Category:
+                    <TagIcon className="w-6 h-6  mx-3 cursor-pointer" />
                   </Listbox.Label>
                   <div className="relative mt-1">
                     <Listbox.Button className="relative w-40 cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none sm:text-sm">

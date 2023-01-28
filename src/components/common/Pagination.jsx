@@ -12,10 +12,11 @@ const Pagination = ({
   const pagesCount = Math.ceil(todosCount / pageSize);
 
   const pages = _.range(1, pagesCount + 1);
-  const lastPage = pages[pages.length - 1];
+  const lastPage = pages.length - 1;
+  console.log(lastPage);
 
   return (
-    <div className="flex justify-center bottom-full space-x-1 mt-10 dark:text-gray-100">
+    <div className="flex block bottom-0 my-10 justify-center bottom-full space-x-1 mt-10 dark:text-gray-100">
       <button
         title="previous"
         type="button"

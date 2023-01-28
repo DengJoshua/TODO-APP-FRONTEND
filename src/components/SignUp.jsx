@@ -5,18 +5,63 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Cookies from "universal-cookie";
 import { BASE_URL } from "../API";
+import Joi from "joi-browser";
 
 const cookies = new Cookies();
 
 const SignUp = () => {
-  const initialValues = { username: "", password: "", email: "" };
-  const [formValues, setFormValues] = useState(initialValues);
+  const [user, setUser] = useState({ email: "", password: "", username: "" });
+  const [errors, setErrors] = useState({});
 
-  const [error, setError] = useState();
+  const schema = {
+    email: Joi.string()
+      .required()
+      .email()
+      .label("Email"),
+    password: Joi.string()
+      .required()
+      .min(5)
+      .label("Password"),
+    username: Joi.string()
+      .required()
+      .label("Username")
+      .min(4)
+  };
 
-  const handleChange = e => {
-    const { name, value } = e.target;
-    setFormValues({ ...formValues, [name]: value });
+  const validate = e => {
+    e.preventDefault();
+    const { error } = Joi.validate(
+      { email: user.email, password: user.password, username: user.username },
+      schema,
+      {
+        abortEarly: false
+      }
+    );
+
+    if (!error) return createAccount();
+
+    const errors = {};
+    for (let item of error.details) errors[item.path[0]] = item.message;
+    return setErrors(errors);
+  };
+
+  const validateProperty = ({ name, value }) => {
+    const obj = { [name]: value };
+    const objSchema = { [name]: schema[name] };
+    const { error } = Joi.validate(obj, objSchema);
+    return error ? error.details[0].message : null;
+  };
+
+  const handleChange = ({ currentTarget: input }) => {
+    const errorsObj = { ...errors };
+    const errorMessage = validateProperty(input);
+    if (errorMessage) errorsObj[input.name] = errorMessage;
+    else delete errorsObj[input.name];
+
+    const userDetails = { ...user };
+    userDetails[input.name] = input.value;
+    setErrors(errorsObj);
+    setUser(userDetails);
   };
 
   const createAccount = async e => {
@@ -24,22 +69,21 @@ const SignUp = () => {
 
     await axios
       .post(`${BASE_URL}/signup`, {
-        email: formValues.email,
-        password: formValues.password,
-        username: formValues.username
+        email: user.email,
+        password: user.password,
+        username: user.username
       })
       .then(res => {
         const data = res.data;
-        if (data.status_code === 200) {
+        if (data["status_code"] == 200) {
           cookies.set("auth_token", data["auth_token"]);
-          window.location = "login";
+          window.location = "/me/todos";
         } else {
-          setError(data.detail);
+          setErrors({ email: data.detail });
+          setUser({ email: user.email, username: user.username, password: "" });
         }
       })
-      .catch(err => setError(err.data));
-
-    setFormValues(initialValues);
+      .catch(err => console.log(err));
   };
 
   return (
@@ -51,35 +95,39 @@ const SignUp = () => {
             type="text"
             placeholder="Enter your email...."
             onChange={handleChange}
-            value={formValues.email}
+            value={user.email}
             name="email"
-            className={`h-10 text-sm my-2 sm:text-base auth-input w-full focus:h-10 ${
-              error ? "active outline outline-red-500" : "outline-none"
-            }`}
+            className="h-10 text-sm my-2 sm:text-base auth-input w-full focus:h-10
+            outline-none"
           />
+          {errors.email && (
+            <span className="text-red-500 mb-2">{errors.email}</span>
+          )}
 
           <label className="text-sm sm:text-base">Enter Username:</label>
           <input
             type="text"
             placeholder="Enter your username...."
             onChange={handleChange}
-            value={formValues.username}
+            value={user.username}
             name="username"
-            className={`h-10 text-sm my-2 sm:text-base auth-input w-full focus:h-10 ${
-              error ? "active outline outline-red-500" : "outline-none"
-            }`}
+            className="h-10 text-sm my-2 sm:text-base auth-input w-full focus:h-10 outline-none"
           />
+          {errors.username && (
+            <span className="text-red-500 mb-2">{errors.username}</span>
+          )}
           <label className="text-sm sm:text-base">Enter Password:</label>
           <input
             type="password"
             placeholder="Enter your password...."
             onChange={handleChange}
-            value={formValues.password}
+            value={user.password}
             name="password"
-            className={`h-10 text-sm my-2 sm:text-base auth-input w-full focus:h-10 ${
-              error ? "active outline outline-red-500" : "outline-none"
-            }`}
+            className="h-10 text-sm my-2 sm:text-base auth-input w-full focus:h-10outline-none"
           />
+          {errors.password && (
+            <span className="text-red-500 mb-2">{errors.password}</span>
+          )}
           <button className="button mt-2" onClick={createAccount}>
             Sign up
           </button>
