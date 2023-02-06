@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Drawer from "@mui/material/Drawer";
 import Toolbar from "@mui/material/Toolbar";
 import List from "@mui/material/List";
@@ -7,10 +7,12 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import MailIcon from "@mui/icons-material/Mail";
 import { useLocation, useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
+import Collapse from "@mui/material/Collapse";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
+import { TagIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 const classes = {
   page: {
@@ -21,13 +23,18 @@ const classes = {
     display: "flex"
   },
   active: {
-    background: "#f4f4f4"
+    background: "#c2d5f9"
+  },
+  sider_bar_icon: {
+    height: "10px",
+    color: "red"
   }
 };
 
-function Sidebar({ menuItems1, menuItems2 }) {
+function Sidebar({ menuItems1, setOpenTagModal, tags, tagsLoading }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [openDropDown, setOpenDropDown] = useState(true);
 
   return (
     <div className="hidden md:contents">
@@ -39,21 +46,28 @@ function Sidebar({ menuItems1, menuItems2 }) {
           [`& .MuiDrawer-paper`]: {
             width: "20%",
             boxSizing: "border-box"
-          }
+          },
+          fontSize: "10px"
         }}
       >
         <Toolbar />
         <Toolbar>
           <span>BEREADY</span>
         </Toolbar>
-        <Box sx={{ overflow: "auto" }}>
-          <List>
+        <Box sx={{ overflow: "auto", fontSize: "10px" }}>
+          <List sx={{ fontSize: "10px" }}>
             {menuItems1.map(item => (
               <ListItem
                 button
                 key={item.text}
                 onClick={() => navigate(item.path)}
-                sx={location.pathname == item.path ? classes.active : null}
+                sx={
+                  location.pathname.substring(
+                    location.pathname.lastIndexOf("/") + 1
+                  ) === item.path
+                    ? classes.active
+                    : null
+                }
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
@@ -62,30 +76,42 @@ function Sidebar({ menuItems1, menuItems2 }) {
           </List>
           <Divider />
           <List>
-            {["Lists", "Tags", "Filters"].map((text, index) => (
-              <ListItem key={text} disablePadding>
-                <ListItemButton>
-                  <ListItemIcon>
-                    {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                  </ListItemIcon>
-                  <ListItemText primary={text} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-          <Divider />
-          <List>
-            {menuItems2.map(item => (
-              <ListItem
-                button
-                key={item.text}
-                onClick={() => navigate(item.path)}
-                sx={location.pathname == item.path ? classes.active : null}
-              >
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItem>
-            ))}
+            <ListItemButton
+              className="flex w-full"
+              onClick={() => setOpenDropDown(!openDropDown)}
+            >
+              {openDropDown ? <ExpandLess /> : <ExpandMore />}
+              <span className="pl-2 text-sm">Tags</span>
+              <PlusIcon
+                className="w-5 h-5 ml-auto"
+                onClick={() => setOpenTagModal(true)}
+              />
+            </ListItemButton>
+            <Collapse in={openDropDown} unmountOnExit>
+              <ul>
+                {tagsLoading ? (
+                  <h1>loading tags</h1>
+                ) : (
+                  tags.map(tag => (
+                    <li
+                      key={tags.indexOf(tag)}
+                      onClick={() => navigate(tag.toLowerCase())}
+                      className="cursor-pointer flex pl-8 font items-center py-2 text-sm"
+                      style={
+                        location.pathname.substring(
+                          location.pathname.lastIndexOf("/") + 1
+                        ) === tag
+                          ? classes.active
+                          : null
+                      }
+                    >
+                      <TagIcon className="w-5 h-5 mr-2" />
+                      <span>{tag}</span>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </Collapse>
           </List>
         </Box>
       </Drawer>

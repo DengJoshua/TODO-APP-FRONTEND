@@ -17,12 +17,15 @@ function Navbar({ user }) {
 
   return (
     <AppBar
-      position="sticky"
-      sx={{ zIndex: theme => theme.zIndex.drawer + 1, color: "#000" }}
+      position="fixed"
+      sx={{
+        zIndex: theme => theme.zIndex.drawer + 1,
+        color: "#000"
+      }}
     >
       <Typography component="div">
         <section className="bg-white left-0 bg-white top-0 leading-[50px] mx-50 flex-row pl-5 lg:sticky w-full">
-          <div className="lg:flex items-center justify-between lg:w-4/5 xl:w-3/5 mx-auto">
+          <div className="lg:hidden items-center justify-between lg:w-4/5 xl:w-3/5 mx-auto">
             <div className="cursor-pointer">
               <Link to="/home">LOGO</Link>
             </div>
@@ -98,7 +101,7 @@ function Navbar({ user }) {
                   </li>
                   <li>
                     <NavLink
-                      to="/me/todos"
+                      to="/me/todos/inbox"
                       className="hover:underline hover:underline-offset-1"
                       onClick={() => setOpenMenu(false)}
                     >

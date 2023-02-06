@@ -9,53 +9,39 @@ import { paginate } from "../utils/paginate";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import CalendarToday from "@mui/icons-material/CalendarToday";
 import CalendarViewDay from "@mui/icons-material/CalendarTodayOutlined";
-import { ListItemAvatar } from "@mui/material";
 import Sidebar from "./common/Sidebar";
 import Today from "./Today";
 import { Routes, Route } from "react-router";
-import Upcoming from "./Upcoming";
 import Inbox from "./Inbox";
+import TagModal from "./common/TagModal";
+import TagBasesTodos from "./common/TagBasedTodos";
+import TodoDetail from "./common/TodoDetail";
+import Completed from "./Completed";
 
 const cookies = new Cookies();
-const categories = [
-  {
-    name: "All",
-    id: 1
-  },
-  {
-    name: "Social",
-    id: 2
-  },
-  {
-    name: "Work",
-    id: 3
-  },
-  {
-    name: "Entertainment",
-    id: 4
-  },
-  {
-    name: "Family",
-    id: 5
-  }
-];
 
 const Todos = ({ user }) => {
+  const [tags, setTags] = useState(null);
   const [todos, setTodos] = useState([]);
   const [title, setTitle] = useState("");
+  const [tagname, setTagName] = useState("");
   const [description, setDescription] = useState("");
   const [query, setQuery] = useState("");
   const [endDate, setEndDate] = useState("");
   const [todoId, setTodoId] = useState(null);
-  const [selected, setSelected] = useState("Entertainment");
-  const [category, setCategory] = useState(categories[0].name);
+  const [category, setCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [modalOpen, setOpenModal] = useState(false);
+  const [finish, setFinish] = useState(false);
+  const [todo, selectTodo] = useState(null);
+  const [openTagModal, setOpenTagModal] = useState(false);
   const [isLoadingTodos, setIsLoadingTodos] = useState(true);
   const [errors, setErrors] = useState(null);
+  const [tagsLoading, setTagsLoading] = useState(true);
   const pageSize = 4;
 
   const startDate = new Date().toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
 
   const menuItems1 = [
     {
@@ -64,9 +50,9 @@ const Todos = ({ user }) => {
       path: "today"
     },
     {
-      text: "Next 7 Days",
+      text: "Completed",
       icon: <CalendarViewDay />,
-      path: "upcoming"
+      path: "completed"
     },
     {
       text: "Inbox",
@@ -75,39 +61,13 @@ const Todos = ({ user }) => {
     }
   ];
 
-  const menuItems2 = [
-    {
-      text: "Completed",
-      icon: <ListItemAvatar />,
-      path: "completed"
-    },
-    {
-      text: "Won't Do",
-      icon: <CalendarViewDay />,
-      path: "upcoming"
-    },
-    {
-      text: "Trash",
-      icon: <CalendarToday />,
-      path: "upcoming"
-    }
-  ];
+  const cehc = ["tags"];
 
-  let filteredTodos = todos.filter(todo => {
-    if (category === "Work") {
-      return todo.category === "Work";
-    } else if (category === "Social") {
-      return todo.category === "Social";
-    } else if (category === "Family") {
-      return todo.category === "Family";
-    } else if (category === "Entertainment") {
-      return todo.category === "Entertainment";
-    } else if (category === "All") {
-      return todo;
-    }
-  });
+  let filteredTodos = todos.filter(item =>
+    cehc.some(key => item[key].includes(query))
+  );
 
-  const keys = ["title", "description", "category"];
+  const keys = ["title", "description", "tags"];
 
   const search = data => {
     return data.filter(item =>
@@ -121,6 +81,22 @@ const Todos = ({ user }) => {
     currentPage
   );
 
+  const getTags = async () => {
+    const cookie = cookies.get("auth_token");
+
+    await axios
+      .get(`${BASE_URL}/tags`, {
+        headers: {
+          Authorization: `Bearer ${cookie}`
+        }
+      })
+      .then(res => {
+        setTags(res.data);
+        setTagsLoading(false);
+      })
+      .catch(err => console.log(err));
+  };
+
   const closeModal = () => {
     setTodoId(null);
     setDescription("");
@@ -133,6 +109,7 @@ const Todos = ({ user }) => {
   };
 
   const fetchAllTodos = async () => {
+    getTags();
     const cookie = cookies.get("auth_token");
 
     await axios
@@ -141,7 +118,7 @@ const Todos = ({ user }) => {
           Authorization: `Bearer ${cookie}`
         }
       })
-      .then(res => setTodos(res.data))
+      .then(res => setTodos(res.data.reverse()))
       .catch(err => console.log(err));
   };
 
@@ -155,9 +132,10 @@ const Todos = ({ user }) => {
         {
           title,
           description,
-          category: selected,
           end_date: endDate,
-          start_date: startDate
+          start_date: startDate,
+          tags: tagname,
+          finish: finish
         },
         {
           headers: {
@@ -167,13 +145,14 @@ const Todos = ({ user }) => {
       )
       .then(res => {
         if (res.status === 201) {
-          setTodos(res.data);
+          setTodos(res.data.reverse());
           setOpenModal(false);
+          getTags();
           setCategory("All");
           setTitle("");
           setDescription("");
-          setSelected("Entertainment");
-          console.log(res.status);
+          setTagName("");
+          setFinish(false);
         } else {
           setErrors(res.data);
         }
@@ -185,8 +164,9 @@ const Todos = ({ user }) => {
     setDescription(todo.description);
     setTitle(todo.title);
     setTodoId(todo.id);
-    setSelected(todo.category);
+    setTagName(todo.tags);
     setOpenModal(true);
+    setFinish(todo.finish);
   };
 
   const updateTodo = async e => {
@@ -199,9 +179,10 @@ const Todos = ({ user }) => {
         {
           title,
           description,
-          category: selected,
+          category: tagname,
           start_date: startDate,
-          end_date: endDate
+          end_date: endDate,
+          finish: finish
         },
         {
           headers: {
@@ -210,13 +191,35 @@ const Todos = ({ user }) => {
         }
       )
       .then(res => {
-        setTodos(res.data);
+        setTodos(res.data.reverse());
         setTitle("");
         setEndDate("");
         setDescription("");
-        setSelected("Entertainment");
+        setTagName("");
         setTodoId(null);
         setOpenModal(false);
+        setFinish(false);
+      })
+      .catch(err => console.log(err));
+  };
+
+  const updateTodoFinish = async todo => {
+    const cookie = cookies.get("auth_token");
+
+    await axios
+      .put(
+        `${BASE_URL}/api/todos/${todo.id}/finish`,
+        {
+          finish: !todo.finish
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${cookie}`
+          }
+        }
+      )
+      .then(res => {
+        setTodos(res.data.reverse());
       })
       .catch(err => console.log(err));
   };
@@ -233,6 +236,25 @@ const Todos = ({ user }) => {
       .then(res => setTodos(res.data));
   };
 
+  const addTag = async () => {
+    const cookie = cookies.get("auth_token");
+
+    await axios
+      .post(
+        `${BASE_URL}/tags`,
+        { tags: `${tagname} ` },
+        {
+          headers: {
+            Authorization: `Bearer ${cookie}`
+          }
+        }
+      )
+      .then(res => {
+        setTags(res.data);
+      })
+      .catch(err => console.log(err));
+  };
+
   useEffect(() => {
     fetchAllTodos();
     if (todos.length <= 1) {
@@ -242,6 +264,7 @@ const Todos = ({ user }) => {
   }, []);
 
   const count = search(filteredTodos).length;
+  console.log(count);
 
   return (
     <React.Fragment>
@@ -254,7 +277,19 @@ const Todos = ({ user }) => {
       ) : (
         <section className="bg-bgcolor w-full h-full">
           <div className="md:flex">
-            <Sidebar menuItems1={menuItems1} menuItems2={menuItems2} />
+            <Sidebar
+              menuItems1={menuItems1}
+              setOpenTagModal={setOpenTagModal}
+              tags={tags}
+              tagsLoading={tagsLoading}
+              addTag={addTag}
+            />
+            <TagModal
+              openTagModal={openTagModal}
+              tagname={tagname}
+              setOpenTagModal={setOpenTagModal}
+              setTagName={setTagName}
+            />
             <Routes>
               <Route
                 path="/today"
@@ -262,22 +297,21 @@ const Todos = ({ user }) => {
                   <Today
                     deleteTodo={deleteTodo}
                     description={description}
-                    selected={selected}
+                    tagname={tagname}
                     setCategory={setCategory}
-                    categories={categories}
+                    tags={tags}
+                    finish={finish}
+                    setFinish={setFinish}
                     category={category}
                     setCurrentPage={setCurrentPage}
                     setDescription={setDescription}
                     addTodo={addTodo}
                     title={title}
-                    description={description}
                     setDescription={setDescription}
                     setTitle={setTitle}
                     closeModal={closeModal}
                     updateTodo={updateTodo}
-                    selected={selected}
-                    setSelected={setSelected}
-                    categories={categories}
+                    setTagName={setTagName}
                     errors={errors}
                     todoId={todoId}
                     endDate={endDate}
@@ -292,19 +326,41 @@ const Todos = ({ user }) => {
                     count={count}
                     modalOpen={modalOpen}
                     todos={todos}
+                    today={today}
+                    selectTodo={selectTodo}
+                    updateTodoFinish={updateTodoFinish}
+                    pageSize={pageSize}
                   />
                 }
               />
-              <Route path="upcoming" element={<Upcoming />} />
               <Route
-                path="inbox"
+                path="completed"
+                element={
+                  <Completed
+                    todoData={todos}
+                    editTodo={editTodo}
+                    updateTodoFinish={updateTodoFinish}
+                    selectTodo={selectTodo}
+                    setCurrentPage={setCurrentPage}
+                    setQuery={setQuery}
+                    deleteTodo={deleteTodo}
+                    changePage={changePage}
+                    currentPage={currentPage}
+                    pageSize={pageSize}
+                  />
+                }
+              />
+              <Route
+                path="/inbox"
                 element={
                   <Inbox
                     deleteTodo={deleteTodo}
                     description={description}
-                    selected={selected}
+                    tagname={tagname}
+                    finish={finish}
+                    setFinish={setFinish}
                     setCategory={setCategory}
-                    categories={categories}
+                    categories={tags}
                     category={category}
                     setCurrentPage={setCurrentPage}
                     setDescription={setDescription}
@@ -315,9 +371,7 @@ const Todos = ({ user }) => {
                     setTitle={setTitle}
                     closeModal={closeModal}
                     updateTodo={updateTodo}
-                    selected={selected}
-                    setSelected={setSelected}
-                    categories={categories}
+                    setTagName={setTagName}
                     errors={errors}
                     todoId={todoId}
                     endDate={endDate}
@@ -332,10 +386,63 @@ const Todos = ({ user }) => {
                     count={count}
                     modalOpen={modalOpen}
                     todos={todos}
+                    selectTodo={selectTodo}
+                    updateTodoFinish={updateTodoFinish}
+                    pageSize={pageSize}
                   />
                 }
               />
+              {tagsLoading
+                ? "Loading"
+                : tags.map(item => (
+                    <Route
+                      path={item.toLocaleLowerCase()}
+                      key={tags.indexOf(item)}
+                      element={
+                        <TagBasesTodos
+                          deleteTodo={deleteTodo}
+                          description={description}
+                          tagname={tagname}
+                          setCategory={setCategory}
+                          tags={tags}
+                          finish={finish}
+                          setFinish={setFinish}
+                          category={category}
+                          setCurrentPage={setCurrentPage}
+                          setDescription={setDescription}
+                          addTodo={addTodo}
+                          title={title}
+                          description={description}
+                          setDescription={setDescription}
+                          setTitle={setTitle}
+                          closeModal={closeModal}
+                          updateTodo={updateTodo}
+                          setTagName={setTagName}
+                          categories={tags}
+                          errors={errors}
+                          todoId={todoId}
+                          endDate={endDate}
+                          setEndDate={setEndDate}
+                          todoData={todoData}
+                          user={user}
+                          editTodo={editTodo}
+                          setQuery={setQuery}
+                          setOpenModal={setOpenModal}
+                          changePage={changePage}
+                          currentPage={currentPage}
+                          count={count}
+                          modalOpen={modalOpen}
+                          todos={todos}
+                          tagname={item}
+                          selectTodo={selectTodo}
+                          updateTodoFinish={updateTodoFinish}
+                          pageSize={pageSize}
+                        />
+                      }
+                    />
+                  ))}
             </Routes>
+            <TodoDetail todo={todo} />
           </div>
         </section>
       )}

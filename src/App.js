@@ -47,12 +47,11 @@ const App = () => {
         </div>
       ) : (
         <React.Fragment>
-          <main className="w-full h-full font-sans">
+          <main className="w-full h-full flex flex-row font-sans">
             <Navbar user={user} />
-
             <Routes>
               <Route path="/home" element={<Home />} />
-              <Route path="/support" element={<Support />} />
+              <Route path="/support" element={<Support data={user} />} />
               <Route
                 path="/me/todos//*"
                 element={

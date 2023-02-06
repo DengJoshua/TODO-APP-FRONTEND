@@ -1,20 +1,19 @@
 import React from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 
-import Dropdown from "./Dropdown";
-import Todo from "./Todo";
-import AddTodo from "./AddTodo";
-import Pagination from "./common/Pagination";
+import Dropdown from "../Dropdown";
+import Todo from "../Todo";
+import AddTodo from "../AddTodo";
+import Pagination from "./Pagination";
 import { Modal } from "@mui/material";
 
 import Box from "@mui/material/Box";
 
-function Today({
-  user,
+function TagBasesTodos({
   addTodo,
   description,
   setCategory,
-  categories,
+  tags,
   category,
   setCurrentPage,
   setDescription,
@@ -33,24 +32,19 @@ function Today({
   errors,
   endDate,
   todoId,
+  count,
   changePage,
   tagname,
   setTagName,
+  todos,
   updateTodo,
-  today,
   selectTodo,
   updateTodoFinish,
-  tags,
   finish,
   setFinish
 }) {
-  const todayTodos = todoData.filter(
-    item => item.end_date.toString() === today.toString()
-  );
-  const count = todayTodos.length;
-
   return (
-    <div className="md:w-full mt-14 lg:w-4/5 xl:w-3/5 h-full mx-auto px-2 md:p-4 ">
+    <div className="md:w-full lg:w-4/5 xl:w-3/5 mt-4 h-full mx-auto px-2 md:p-4 ">
       <Modal open={modalOpen} onClose={() => setOpenModal(false)}>
         <Box>
           <AddTodo
@@ -63,7 +57,6 @@ function Today({
             updateTodo={updateTodo}
             tagname={tagname}
             setTagName={setTagName}
-            categories={categories}
             errors={errors}
             id={todoId}
             endDate={endDate}
@@ -73,11 +66,9 @@ function Today({
           />
         </Box>
       </Modal>
-      <h1 className="text-xl md:text-3xl pt-8 pb-5 font-sans">
-        Welcome back, {user.username}
-      </h1>
+      <h1 className="text-xl md:text-3xl pt-8 pb-5 font-sans">{tagname}</h1>
       <p className="text-base font-light md:text-lg mb-10">
-        You currently have {count} todo{count === 0 ? " " : "s "} today.
+        You currently have {todos.length} todos.
       </p>
 
       <div className="form-check my-2 mb-10">
@@ -104,14 +95,13 @@ function Today({
         <Dropdown tags={tags} category={category} setCategory={setCategory} />
 
         <ul className="w-full">
-          {todayTodos.map(todo => (
+          {todoData.map(todo => (
             <Todo
               todo={todo}
               key={todo.id}
               deleteTodo={deleteTodo}
               editTodo={editTodo}
               selectTodo={selectTodo}
-              today={today}
               updateTodoFinish={updateTodoFinish}
             />
           ))}
@@ -129,4 +119,4 @@ function Today({
   );
 }
 
-export default Today;
+export default TagBasesTodos;

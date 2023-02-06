@@ -6,7 +6,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Dropdown({ categories, category, setCategory }) {
+export default function Dropdown({ tags, category, setCategory }) {
   return (
     <Listbox value={category}>
       {({ open }) => (
@@ -25,17 +25,17 @@ export default function Dropdown({ categories, category, setCategory }) {
               leaveTo="opacity-0"
             >
               <Listbox.Options className="absolute z-10 mt-1 max-h-56 w-40 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                {categories.map(item => (
+                {tags?.map(item => (
                   <Listbox.Option
-                    key={item.id}
-                    onClick={() => setCategory(item.name)}
+                    key={tags.indexOf(item)}
+                    onClick={() => setCategory(item)}
                     className={({ active }) =>
                       classNames(
                         active ? "text-white bg-indigo-600" : "text-gray-900",
                         "relative cursor-default select-none py-2 pl-3 pr-9"
                       )
                     }
-                    value={item.name}
+                    value={item}
                   >
                     {({ selected, active }) => (
                       <>
@@ -45,7 +45,7 @@ export default function Dropdown({ categories, category, setCategory }) {
                             "ml-3 block truncate"
                           )}
                         >
-                          {item.name}
+                          {item}
                         </span>
 
                         {selected ? (

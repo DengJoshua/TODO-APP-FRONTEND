@@ -6,13 +6,15 @@ import axios from "axios";
 import Cookies from "universal-cookie";
 import { BASE_URL } from "../API";
 import Joi from "joi-browser";
+import { useNavigate } from "react-router-dom";
 
 const cookies = new Cookies();
 
 const Login = () => {
-  const [password, setPassword] = useState("");
   const [user, setUser] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
+
+  const navigate = useNavigate();
 
   const schema = {
     email: Joi.string()
@@ -69,9 +71,10 @@ const Login = () => {
       })
       .then(res => {
         const data = res.data;
-        if (data["status_code"] == 200) {
-          cookies.set("auth_token", data["auth_token"]);
-          window.location = "/me/todos";
+        if (data["status_code"] === 200) {
+          cookies.set("auth_token", data.auth_token, { path: "/" });
+          navigate("/me/todos/inbox");
+          window.location.reload();
         } else {
           setErrors({ password: data.detail });
           setUser({ email: user.email, password: "" });

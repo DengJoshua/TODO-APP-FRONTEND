@@ -35,13 +35,17 @@ function Inbox({
   todoId,
   count,
   changePage,
-  selected,
-  setSelected,
+  tagname,
+  setTagName,
   todos,
-  updateTodo
+  updateTodo,
+  selectTodo,
+  updateTodoFinish,
+  finish,
+  setFinish
 }) {
   return (
-    <div className="md:w-full lg:w-4/5 xl:w-3/5 h-full mx-auto px-2 md:p-4 ">
+    <div className="md:w-full lg:w-4/5 mt-14 xl:w-3/5 h-full mx-auto px-2 md:p-4 ">
       <Modal open={modalOpen} onClose={() => setOpenModal(false)}>
         <Box>
           <AddTodo
@@ -52,13 +56,15 @@ function Inbox({
             setTitle={setTitle}
             closeModal={closeModal}
             updateTodo={updateTodo}
-            selected={selected}
-            setSelected={setSelected}
+            tagname={tagname}
+            setTagName={setTagName}
             categories={categories}
             errors={errors}
             id={todoId}
             endDate={endDate}
             setEndDate={setEndDate}
+            finish={finish}
+            setFinish={setFinish}
           />
         </Box>
       </Modal>
@@ -101,6 +107,8 @@ function Inbox({
               key={todo.id}
               deleteTodo={deleteTodo}
               editTodo={editTodo}
+              selectTodo={selectTodo}
+              updateTodoFinish={updateTodoFinish}
             />
           ))}
         </ul>

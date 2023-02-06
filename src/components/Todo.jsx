@@ -1,36 +1,38 @@
 import React from "react";
-import {
-  EllipsisHorizontalIcon,
-  Squares2X2Icon
-} from "@heroicons/react/24/solid";
+import { EllipsisHorizontalIcon } from "@heroicons/react/24/solid";
 import {
   CalendarIcon,
   ChatBubbleOvalLeftIcon
 } from "@heroicons/react/24/outline";
 import { Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
+import Moment from "moment";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-function Todo({ todo, deleteTodo, editTodo, selectTodo }) {
-  const getDaysLeft = () => {
-    const startDate = new Date(todo.start_date);
-    const endDate = new Date(todo.end_date);
-    const timeDifference = endDate.getTime() - startDate.getTime();
-    const dayDifference = Math.abs(timeDifference / (1000 * 3600 * 24));
-    return dayDifference;
+function Todo({ todo, deleteTodo, editTodo, selectTodo, updateTodoFinish }) {
+  const formatDate = input => {
+    const date = Intl.DateTimeFormat("en-US", {
+      day: "2-digit",
+      month: "short"
+    }).format(new Date(input));
+    return date;
   };
 
   return (
     <li
-      className="flex bg-white rounded-lg items-start mb-4 shadow-xl p-3"
+      className={`flex bg-white rounded-lg items-start mb-4 shadow-xl p-3 ${
+        todo.finish ? "bg-gray-200" : ""
+      }`}
       onClick={() => selectTodo(todo)}
     >
       <input
         type="checkbox"
+        checked={todo.finish}
         className="accent-gray-500 mt-1 border-none mx-2"
+        onChange={() => updateTodoFinish(todo)}
       />
       <div className="flex-1 min-w-0">
         <div className="flex justify-between">
@@ -92,13 +94,12 @@ function Todo({ todo, deleteTodo, editTodo, selectTodo }) {
         <p className="text-general mb-1">{todo.description}</p>
         <div className="flex justify-between mt-2">
           <span className="fit-content text-general p-0.5 left cursor-pointer rounded-md border border-gray-300 text-sm hover:bg-gray-50 ">
-            {todo.category}
+            {todo.tags}
           </span>
-          <div className="flex text-general">
-            {getDaysLeft()}
-            <CalendarIcon className="h-6 w-6 text-general cursor-pointer ml-1 mr-3" />
-            3
-            <ChatBubbleOvalLeftIcon className="h-6 w-6 text-general cursor-pointer ml-1 mr-2" />
+          <div className="flex text-general items-center">
+            <span className="text-blue-500 text-sm">
+              {formatDate(todo.end_date)}
+            </span>
           </div>
         </div>
       </div>
